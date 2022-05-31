@@ -95,28 +95,41 @@ def get_dealer_details(request, dealership):
         return HttpResponse(context)
 
 # Create a `add_review` view to submit a review
-def add_review(request, dealership):
-    context = {}
-    if request.method == "POST":
+def add_review(request, **kwargs):
+    if request.method == "GET":
+        # dealership = dealership
+        url = "https://dbe14de2.us-south.apigw.appdomain.cloud/api/dealership"
+        # Get dealers from the URL
+        context = {
+            "cars": CarModel.objects.all(),
+            # "dealership": dealership,
+            "dealer_name": get_dealers_from_cf(url)[2],
+        }
+        return render(request, 'djangoapp/add_review.html', context)
+    elif request.method == 'POST':
         if request.user.is_authenticated:
             form = request.POST
-            review = {
-                "name": "{request.user.first_name} {request.user.last_name}",
-                "dealership": dealership,
-                "review": form["content"],
-                "purchase": form.get("purchasecheck"),
-                "time": datetime.utcnow().isoformat(),
-                }
-            if form.get("purchasecheck"):
-                review["purchase_date"] = datetime.strptime(form.get("purchasedate"), "%m/%d/%Y").isoformat()
-                car = models.CarModel.objects.get(pk=form["car"])
-                review["car_make"] = car.carmake.name
-                review["car_model"] = car.name
-                review["car_year"]= car.year.strftime("%Y")
-            json_payload["review"] = review
-            print (json_payload)
-            url = "https://5b93346d.us-south.apigw.appdomain.cloud/api3/review"
-            context = restapis.post_request(url, json_payload, dealership=dealership)
-            return HttpResponse("test")
+            username = request.user.username
+            print(form)
+            payload = dict()
+            car_id = form["car"]
+            car = CarModel.objects.get(pk=car_id)
+            payload["dealership"] = dealership
+            payload["review"] = form["content"]
+            payload["purchase"] = False
+            if "purchasecheck" in form:
+                payload["purchase_date"] = datetime.strptime(form.get("purchasedate"), "%Y-%m-%d").isoformat()
+                car = CarModel.objects.get(pk=form["car"])
+                payload["car_make"] = car.car_make.name
+                payload["car_model"] = car.car_name
+                payload["car_year"]= car.car_year.strftime("%Y")
+            #json_payload = {}
+            json_payload = {"review": payload}
+            rev = json_payload["review"]
+            print (rev)
+            url = "https://dbe14de2.us-south.apigw.appdomain.cloud/api3/review"
+            restapis.post_request(url, rev, dealership=dealership)
+            
+            return redirect("djangoapp:dealer_details", dealership=dealership)
         else:
-            return HttpResponse("/djangoapp/login")
+            return redirect("/djangoapp/login")
