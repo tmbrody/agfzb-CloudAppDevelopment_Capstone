@@ -18,7 +18,7 @@ def get_request(url, **kwargs):
     print("GET from {} ".format(url))
     try:
         # Call get method of requests library with URL and parameters
-        response = requests.get(url, headers={'Content-Type': 'application/json'}, params=kwargs)
+        response = requests.get(url, headers={"Content-Type": "application/json"}, params=kwargs)
     except:
         # If any error occurs
         print("Network exception occurred")
@@ -31,15 +31,15 @@ def get_request(url, **kwargs):
 
 # Create a `post_request` to make HTTP POST requests
 # e.g., response = requests.post(url, params=kwargs, json=payload)
-def post_request(url, json_payload, **kwargs):
-    json_obj = json_payload["review"]
+def post_request(url, payload, **kwargs):
     print(kwargs)
-    try:
-        response = requests.post(url, json=json_obj, params=kwargs)
-    except:
-        print("Something went wrong")
-    print (response)
-    return response
+    print("POST to {} ".format(url))
+    print(payload)
+    response = requests.post(url, params=kwargs, json=payload)
+    status_code = response.status_code
+    print("With status {} ".format(status_code))
+    json_data = json.loads(response.text)
+    return json_data
 
 def get_dealers_from_cf(url, **kwargs):
     results = []
@@ -62,31 +62,24 @@ def get_dealers_from_cf(url, **kwargs):
     return results
 
 # Create a get_dealer_reviews_from_cf method to get reviews by dealer id from a cloud function
-def get_dealer_reviews_from_cf(url, dealership):
-    # api_key = os.getenv("API_KEY")
+def get_dealer_reviews_from_cf(url, id):
     results = []
-    # Call get_request with a URL parameter
-    # if api_key:
-    #     json_result = get_request(url, dealerId=dealerId, headers={'Content Type':
-    #                 'application/json'}, auth=HTTPBasicAuth('apikey', api_key))
-    # else:
-    json_result = get_request(url, dealership=dealership)
+    json_result = get_request(url, id=id)
     if json_result:
         # Get the row list in JSON as dealers
-        # reviews = json_result["body"]["data"]["docs"]
-        reviews = json_result["entries"]['docs']
+        reviews = json_result["entries"]["docs"]
         # For each dealer object
         for review in reviews:
             try:
                 review_obj = DealerReview(name = review["name"], 
                 dealership = review["dealership"], review = review["review"], purchase=review["purchase"],
-                purchase_date = review["purchase_date"], car_make = review['car_make'],
-                car_model = review['car_model'], car_year= review['car_year'], sentiment= 'none')
+                purchase_date = review["purchase_date"], car_make = review["car_make"],
+                car_model = review["car_model"], car_year= review["car_year"], sentiment= "none")
             except:
                 review_obj = DealerReview(name = review["name"], 
                 dealership = review["dealership"], review = review["review"], purchase=review["purchase"],
-                purchase_date = 'none', car_make = 'none',
-                car_model = 'none', car_year= 'none', sentiment= 'none')
+                purchase_date = "none", car_make = "none",
+                car_model = "none", car_year= "none", sentiment= "none")
                 
             review_obj.sentiment = analyze_review_sentiments(review_obj.review)
             results.append(review_obj)
@@ -111,9 +104,10 @@ def analyze_review_sentiments(text):
     ).get_result()
     print(json.dumps(response))
     sentiment_score = str(response["sentiment"]["document"]["score"])
-    sentiment_label = sentiment_score +"<br>"+ str(response["sentiment"]["document"]["label"])
+    sentiment_label = response["sentiment"]["document"]["label"]
     print(sentiment_score)
     print(sentiment_label)
     sentimentresult = sentiment_label
     
     return sentimentresult
+    

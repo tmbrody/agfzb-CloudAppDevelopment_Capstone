@@ -18,13 +18,13 @@
         <nav class="navbar navbar-light bg-light">
             <div class="container-fluid">
                 <div class="navbar-header">
-                    <a class="navbar-brand" href="../index">Home</a>
+                    <a class="navbar-brand" href="index">Home</a>
                 </div>
                 <div class="navbar-header">
-                    <a class="navbar-brand" href="../about">About Us</a>
+                    <a class="navbar-brand" href="about">About Us</a>
                 </div>
                 <div class="navbar-header">
-                    <a class="navbar-brand" href="../contact">Contact Us</a>
+                    <a class="navbar-brand" href="contact">Contact Us</a>
                 </div>
                 <ul class="nav navbar-nav navbar-right">
                     {% if user.is_authenticated %}
@@ -51,7 +51,7 @@
         <h1>Best Cars dealership homepage</h1>
         <!--Add a dealer table here -->
         <div class="container">
-            <table class="table table-striped" id="table" data-filter-control="true" style="margin-top: 3%; margin-bottom: 3%;">
+            <table class="table table-striped" id="table" data-filter-control="true">
                <thead>
                        <tr>
                            <th scope="col">ID</th>
