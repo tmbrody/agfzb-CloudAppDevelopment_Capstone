@@ -27,7 +27,7 @@ DEBUG = True
 
 APPEND_SLASH = True
 
-ALLOWED_HOSTS = ["capstone-django-app", "localhost"]
+ALLOWED_HOSTS = ["capstone-django-app.us-south.mybluemix.net", "localhost"]
 
 
 # Application definition
